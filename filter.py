@@ -235,7 +235,7 @@ def __main__(prokka,kraken,quast,short_file,long_file,reports,formatos):
 
 
 
-    output = open("muestras_descartadas.txt","w")
+    output = open("muestras_descartadas.csv","w")
     output.write("Muestra_descartada,Prokka,Quast,Kraken,Fastp\n")
 
     total_descartes = list(failed_quast.keys()) + list(failed_prokka.keys()) + list(failed_cfast.keys()) + list(failed_lfast.keys()) + failed_kraken
@@ -263,9 +263,7 @@ def __main__(prokka,kraken,quast,short_file,long_file,reports,formatos):
             output.write("%s;" %(";".join(failed_cfast[descarte])))
         
         if descarte in failed_lfast:
-            output.write("%s," %(";".join(failed_lfast[descarte])))
-        else:
-            output.write(",")
+            output.write("%s" %(";".join(failed_lfast[descarte])))
         
         output.write("\n")
 
