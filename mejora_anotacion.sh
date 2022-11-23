@@ -52,13 +52,13 @@ ncbi-genome-download bacteria -F fasta,genbank -A $list_accesions -o $output
 echo "Download has finished"
 
 
-path="$output/refseq/bacteria"
-genome_folders=$(ls $path)
+path_genomes="$output/refseq/bacteria"
+genome_folders=$(ls $path_genomes)
 
 # Unzipping genomes
 for genome in $genome_folders
 do
-    gzip -d $path/$genome/*.gz
+    gzip -d $path_genomes/$genome/*.gz
 done
 
 # If wished, plasmids will be eliminated from the FASTA files.
@@ -68,18 +68,21 @@ if [ "$plasmidos" == "no" ]
 then
     for genome in $genome_folders
     do        
-        file=$(ls $path/$genome | grep .fna)
+        file=$(ls $path_genomes/$genome | grep .fna)
+        file_path="$path_genomes/$genome/$file"
         new_file="np_"$file
+        newfile_path="$path_genomes/$genome/$new_file"
+        anotaciones_path="$path_genomes/$genome/anotaciones"
 
         # We calculate the line where the plasmids begin to cut it off
-        limit_line=$(cat -n $path/$genome/$file | grep ">" | awk '{if (NR == 2){print $1}}')
+        limit_line=$(cat -n $file_path | grep ">" | awk '{if (NR == 2){print $1}}')
         limit_line=$(($limit_line - 1))
 
         # Create a new file without the plasmids for each genome        
-        head -n $limit_line $path/$genome/$file > $path/$genome/$new_file
+        head -n $limit_line $file_path > $newfile_path
 
         # Annotate the genome
-        prokka --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $path/$genome/"anotaciones" $path/$genome/$new_file 
+        prokka --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $anotaciones_path $newfile_path 
     done
 fi
 
@@ -89,8 +92,13 @@ then
     do
         # Fasta with the cromosome and the plasmids
         file=$(ls $path/$genome | grep .fna)
+        file_path="$path/$genome/$file"
+        anotaciones_path="$path_genomes/$genome/anotaciones"
+
         # Annotate the genome
-        prokka --kingdom "Bacteria" --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $path/$genome/"anotaciones" $path/$genome/$file
+        prokka --kingdom "Bacteria" --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $anotaciones_path $file_path
+        # Idenitfy the Plasmids
+        plasmidfinder.py -i $file_path -o $anotaciones_path
     done
 fi
 
@@ -98,28 +106,36 @@ fi
 # Investigate the pangenome
 
 # Get the gff_files 
-path="genomas_descargados/refseq/bacteria"
 genome_folders=$(ls $path)
 # Folder for gff_files
 mkdir gff_folder
-gff_path="gff_folder/gff_files"
-echo -n "" > $gff_path
+echo -n "" > "gff_files.txt"
 
 for genome in $genome_folders
 do
     gff_file=$(ls $path/$genome/anotaciones | grep gff )
-    echo "$path/$genome/anotaciones/$gff_file"
-    cp "$path/$genome/anotaciones/$gff_file" "$genome.gff"
-    mv "$genome.gff" "gff_folder"
-    echo "$genome".gff3 >> $gff_path 
+    cp "$path/$genome/anotaciones/$gff_file" "$genome.gff" 
+    echo "$genome".gff >> "gff_files.txt"
 done
 
 #Execute panaroo
-panaroo --input "gff_folder/gff_files" -t 4 --clean-mode "sensitive" --aligner mafft -a core --core_threshold 0.9 -o "panaroo_results"
+if [ $plasmidos == "no" ]; then
+    panaroo --input "gff_files.txt" -t 4 --clean-mode "sensitive" --aligner mafft -a core --core_threshold 0.9 -o "panaroo_output"
+fi
 
-# Renombrar groups con un blast (solo usar 1 genoma).
+if [ $plasmidos == "yes"]; then
+    panaroo --input "gff_files.txt" -t 4 --clean-mode "sensitive" --aligner mafft -a pan --core_threshold 0.9 -o "panaroo_output"
 
+
+
+mv *.gff gff_folder ; mv gff_files.txt gff_folder
+# Encontrar los genes de los ficheros group
+ejecutar_blast.sh "panaroo_output"
 
 # Deberiamos crear un archivo de SNPss a partir del alineamiento del core (SNPsites)
-cp panaroo_results/core_gene_alignment.aln .
+cp panaroo_output/core_gene_alignment.aln .
 snp-sites core_gene_alignment.aln -o snp_alignment.aln
+
+
+# PlasmidFinder y Phaster.
+
