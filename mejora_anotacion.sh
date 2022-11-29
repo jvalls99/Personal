@@ -80,9 +80,9 @@ then
 
         # Create a new file without the plasmids for each genome        
         head -n $limit_line $file_path > $newfile_path
-
+        
         # Annotate the genome
-        prokka --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $anotaciones_path $newfile_path 
+        prokka --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $anotaciones_path $newfile_path --cpus 8
     done
 fi
 
@@ -91,13 +91,13 @@ then
     for genome in $genome_folders
     do
         # Fasta with the cromosome and the plasmids
-        file=$(ls $path/$genome | grep .fna)
-        file_path="$path/$genome/$file"
+        file=$(ls $path_genomes/$genome | grep .fna)
+        file_path="$path_genomes/$genome/$file"
         anotaciones_path="$path_genomes/$genome/anotaciones"
-
         # Annotate the genome
-        prokka --kingdom "Bacteria" --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $anotaciones_path $file_path
+        prokka --kingdom "Bacteria" --species "Klebsiella pneumoniae" --proteins "annotation_databases/uniprot_reviewed_proteins.fasta" --outdir $anotaciones_path $file_path --cpus 8
         # Idenitfy the Plasmids
+        echo "Identifying Plasmids..."
         plasmidfinder.py -i $file_path -o $anotaciones_path
     done
 fi
@@ -106,36 +106,41 @@ fi
 # Investigate the pangenome
 
 # Get the gff_files 
-genome_folders=$(ls $path)
+genome_folders=$(ls $path_genomes)
 # Folder for gff_files
 mkdir gff_folder
 echo -n "" > "gff_files.txt"
 
 for genome in $genome_folders
 do
-    gff_file=$(ls $path/$genome/anotaciones | grep gff )
-    cp "$path/$genome/anotaciones/$gff_file" "$genome.gff" 
+    gff_file=$(ls $path_genomes/$genome/anotaciones | grep gff )
+    cp "$path_genomes/$genome/anotaciones/$gff_file" "$genome.gff" 
     echo "$genome".gff >> "gff_files.txt"
 done
 
 #Execute panaroo
+
+echo "Building the pangenome..."
+
 if [ $plasmidos == "no" ]; then
-    panaroo --input "gff_files.txt" -t 4 --clean-mode "sensitive" --aligner mafft -a core --core_threshold 0.9 -o "panaroo_output"
+    panaroo --input "gff_files.txt" -t 4 --clean-mode "sensitive" --aligner mafft -a core --core_threshold 0.95 -o "panaroo_output"
 fi
 
-if [ $plasmidos == "yes"]; then
-    panaroo --input "gff_files.txt" -t 4 --clean-mode "sensitive" --aligner mafft -a pan --core_threshold 0.9 -o "panaroo_output"
-
+if [ $plasmidos == "yes" ]; then
+    panaroo --input "gff_files.txt" -t 4 --clean-mode "sensitive" --aligner mafft -a pan --core_threshold 0.95 -o "panaroo_output"
+fi
 
 
 mv *.gff gff_folder ; mv gff_files.txt gff_folder
 # Encontrar los genes de los ficheros group
+echo "Retrieving gene names from unidentified genes..."
 ejecutar_blast.sh "panaroo_output"
 
 # Deberiamos crear un archivo de SNPss a partir del alineamiento del core (SNPsites)
 cp panaroo_output/core_gene_alignment.aln .
+echo "Searching for SNPs in the core alignment..."
 snp-sites core_gene_alignment.aln -o snp_alignment.aln
+echo "PROGRAM FINISHED SUCCESSFULLY"
 
 
-# PlasmidFinder y Phaster.
 
