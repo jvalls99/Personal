@@ -145,7 +145,7 @@ then
 
             #Annotate the genomes
             anotaciones_path="$genome/anotaciones"
-            sudo /home/javi_vcf99/prokka/bin/prokka --species "Klebsiella pneumoniae" --outdir $anotaciones_path --cpus $n_threads $fasta_name
+            prokka --species "Klebsiella pneumoniae" --outdir $anotaciones_path --cpus $n_threads $fasta_name
 
             # Check presence of plasmids
             plasmidfinder.py -i $fasta_name -o $plasmid_path
@@ -162,12 +162,12 @@ then
             #Check what entries belong to plasmids
             headers_to_remove=$(cat $blast_out | awk -F "\t" '{if (index($3, "plasmid")) print $1}')
             # Remove plasmid entries
-            python3 /mnt/c/Users/javi_/Escritorio/MASTER_BIOINF/TFM/scripts/eliminar_plasmidos.py $fasta_name temp.txt $headers_to_remove
+            python3 eliminar_plasmidos.py $fasta_name temp.txt $headers_to_remove
             mv temp.txt $fasta_name
 
             #Annotate the genomes
             anotaciones_path="$genome/anotaciones"
-            sudo /home/javi_vcf99/prokka/bin/prokka --species "Klebsiella pneumoniae" --outdir $anotaciones_path  --cpus $n_threads $fasta_name
+            prokka --species "Klebsiella pneumoniae" --outdir $anotaciones_path  --cpus $n_threads $fasta_name
 
             # Check presence of plasmids
             plasmidfinder.py -i $fasta_name -o $anotaciones_path
@@ -195,7 +195,7 @@ then
         anotaciones_path="$genome/anotaciones"
 
         # Annotate the genome by using specificic hmm3 databases (HAMAP-Pfam)
-        sudo /home/javi_vcf99/prokka/bin/prokka --kingdom "Bacteria" --species "Klebsiella pneumoniae" --outdir $anotaciones_path $fasta_name --cpus $n_threads
+        prokka --kingdom "Bacteria" --species "Klebsiella pneumoniae" --outdir $anotaciones_path $fasta_name --cpus $n_threads
         
         # Idenitfy the Plasmids
         plasmidfinder.py -i $fasta_name -o $anotaciones_path
@@ -235,7 +235,7 @@ snp-sites core_gene_alignment.aln -o snp_alignment.aln
 
 # 6. Build phylogeny from SNP alignment
 fconstsvar=$(snp-sites -C core_gene_alignment.aln)
-iqtree -s snp_alignment.aln -m GTR+F+I+G4 -nt 6 -bb 1000 -fconst $fconstsvar -redo
+iqtree2 -s snp_alignment.aln -m GTR+F+I+G4 -nt 6 -bb 1000 -fconst $fconstsvar -redo
 
 # 7. End of the programme
 echo "PROGRAM FINISHED"
