@@ -4,5 +4,13 @@ Esta carpeta contiene los programas necesarios para la construcción de un core 
 descarga, anotación, eliminación de plásmidos (únicamente para core) y obtención de los alineamientos con Panaroo. También se obtiene los SNPs y la filogenia
 core.
 
+  Entrada:
+        - lista_accesiones: Un ID de NCBI por linea.
+  Salidas:
+        - Carpeta con los genomas descargados y sus ficheros de anotación e identificación de plásmidos-
+        - Carpeta con los alineamientos individuales de genes y su concatenación (core/pangenoma)
+        - Árbol filogenético con los SNPs del alineamiento.
+  
+            
 
 2. eliminacion_plasmidos.py: Recibe los headers de las secuencias FASTA pertenecientes a plásmidos y las elimina del fichero.
