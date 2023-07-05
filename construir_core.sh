@@ -178,7 +178,7 @@ fi
 
 
 # 3B If wished, keep the plasmids in the FASTA.
-if [ "$$mode_use" == "pangenoma" ]
+if [ "$mode_use" == "pangenoma" ]
 then
     for genome in $path_genomes
     do
