@@ -14,3 +14,7 @@ core.
             
 
 2. eliminacion_plasmidos.py: Recibe los headers de las secuencias FASTA pertenecientes a plásmidos y las elimina del fichero.
+
+3. ids_stxx.txt: Los identificadores de las muestras utilizadas.
+
+4. core_ancestral_stxx: Los resultados obtenidos tras la construcción del core y la inferencia de los estados ancestrales.
