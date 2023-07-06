@@ -19,6 +19,6 @@ wget https://github.com/shenwei356/seqkit/releases/download/v2.4.0/seqkit_linux_
 tar -xzvf seqkit_linux_amd64.tar.gz
 sudo mv seqkit /usr/local/bin/
 
-#Instalar programas BLAST
+# Instalar programas BLAST
 sudo apt install ncbi-entrez-direct
 sudo apt install ncbi-blast+
