@@ -22,3 +22,6 @@ sudo mv seqkit /usr/local/bin/
 # Instalar programas BLAST
 sudo apt install ncbi-entrez-direct
 sudo apt install ncbi-blast+
+
+# Instalar Circlator
+sudo apt install circlator
