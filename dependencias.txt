@@ -8,7 +8,7 @@ $HOME/prokka/bin/prokka --setupdb
 sudo apt install git
 pip3 install git+https://github.com/gtonkinhill/panaroo
 
-# Installar ncbi-genome-download
+# Instalar ncbi-genome-download
 conda install -c bioconda ncbi-genome-download
 
 # Instalar plasmidfinder.py
