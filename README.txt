@@ -20,3 +20,5 @@ core.
 4. core_ancestral_stxx: Los resultados obtenidos tras la construcción del core y la inferencia de los estados ancestrales.
 
 5. resultados_principales_ensamblados: Análisis de calidad de los genomas utilizados para el estudio.
+
+6. dependencias.txt: Contiene los programs necesarios para poder ejecutar la pipeline (construir_core.sh) junto al código que he usado para su respectiva instalación.
