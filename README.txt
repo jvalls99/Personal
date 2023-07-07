@@ -21,4 +21,4 @@ core.
 
 5. resultados_principales_ensamblados: Análisis de calidad de los genomas utilizados para el estudio.
 
-6. dependencias.txt: Contiene los programas necesarios para poder ejecutar la pipeline (construir_core.sh) junto al código que he usado para su respectiva instalación.
+6. dependencias.txt: Contiene los programas necesarios para poder ejecutar la pipeline (construir_core.sh) junto al código que he usado para su respectivas instalaciones.
