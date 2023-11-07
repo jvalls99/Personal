@@ -1,0 +1,194 @@
+---
+title: "TAREA_3"
+author: "Javier Valls"
+date: '2022-04-10'
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float : true
+    code_folding: hide
+    theme: cosmo
+---
+
+**IMPORTANTE: Para la ejecución exitosa de este fichero Rmarkdown debemos tener todos los ficheros (lista de accessiones, metadatos y bamfiles) en el mismo directorio**
+
+El estudio trata de averiguar si los perros que padecen melanomas (un tipo de cáncer)
+presentan diferentes transcriptomas dependiendo del tiempo de supervivencia. De 
+esta manera sería posible asociar la peligrosidad del melanoma con alguna característica
+genética de interés.
+
+Dicho esto, se procede a la construcción de la matriz de conteo:
+
+Obtener los ficheros sra del estudio a partir de la Accesion List
+```{bash obtener_sra, eval=FALSE}
+#!/bin/bash
+
+lista_acc="SRR_Acc_List.txt"
+prefetch --option-file $lista_acc
+
+directorios=$(ls | grep "SRR" | grep -v ".txt")
+
+for directorio in $directorios
+do
+        mv $directorio/*".sra" .
+        rm -r $directorio
+done
+```
+
+Con los ficheros .sra obtener los ficheros BAM de mapeo ordenados.
+```{bash obtener_bam,eval=FALSE}
+#!/bin/bash
+sra_file="$1"
+
+x=4
+start_str=1
+stop_str=$(expr ${#sra_file} - $x)
+name=$(echo $sra_file | cut -c $start_str-$stop_str)
+
+fastq-dump -I --split-files "$name.sra"
+fastq=$(ls | grep fastq | grep -v fastqfiles)
+
+for name in $fastq
+do
+    bowtie2 -x ./indice_perro/genome -U "$name" -S "$name.sam"
+    samtools view -S -b "$name.sam" > "$name.bam"
+    samtools sort "$name.bam" -o "$name""_sort.bam"
+    samtools index "$name""_sort.bam"
+done
+
+```
+
+Generar la matriz de conteo, donde la primera columna será el identificador
+ENSEMBL y el resto las muestras de trabajo (bamfiles)
+
+```{r matriz_conteo,eval=TRUE}
+load("PRJNA421863.rda")
+pacman::p_load(Rsamtools,GenomicFeatures,GenomicAlignments,dplyr)
+bam_files <- system("ls | grep sort.bam | grep -v .bai", intern = TRUE)
+bam_files
+
+# Fichero de anotación del genoma de perro
+gtfFile = "anotacion_perro.gtf"
+
+txdb = makeTxDbFromGFF(gtfFile)
+
+genes = exonsBy(txdb, by="gene")
+
+#PRJNA421863 = summarizeOverlaps(features = genes,
+#                                read=bam_files,
+ #                               mode="Union",
+  #                              singleEnd=TRUE,
+   #                             ignore.strand=TRUE,
+    #                            fragments=FALSE)
+
+
+
+matriz_conteo <- data.frame(rownames(assay(PRJNA421863)),assay(PRJNA421863))
+rownames(matriz_conteo) <- NULL
+names(matriz_conteo)[names(matriz_conteo) == colnames(matriz_conteo[1])] <- 'ENSEMBLID'
+
+```
+
+```{r}
+matriz_conteo
+```
+
+Una vez tenemos la matriz de conteo vamos a meter las variables fenotípicas 
+en el colData del objeto SummarizedExperiment
+
+```{r var_fenotipicas}
+metadata <- read.csv(file = "SraRunTable.txt",sep = ",")
+
+#EDAD
+edad <- metadata$Age
+edad <- as.integer(substring(edad,0,nchar(edad) -1))
+fact_edad <- factor(edad,
+                    levels = edad,
+                    labels = edad)
+# TEJIDO DE ESTUDIO
+tejido <- metadata$tissue
+fact_tejido <- factor(c(0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1),
+                      levels = c(0,1),
+                      labels = unique(tejido))
+# SEXO DEL PERRO
+sexo <- metadata$sex
+factor_sexo <- factor(c(1,0,0,1,0,0,0,1,0,1,0,1,1,0,0,0),
+                      levels = c(0,1),
+                      labels = c("male","female"))
+#replica biologica
+replica <- metadata$replicate
+fenotipic_var <- data.frame(fact_edad,factor_sexo,fact_tejido,replica)
+
+# añadir info fenotipo al SUmmarizedExperiment
+rownames(fenotipic_var) <- colnames(matriz_conteo[2:ncol(matriz_conteo)])
+colnames(fenotipic_var) <- c("edad","sexo","tejido","replica")
+colData(PRJNA421863) <- DataFrame(fenotipic_var)
+
+datosexperimento = new('MIAME',
+                       name='Submitted by the University of Padua',
+                       title = 'Transcriptomic characterization of oral 
+                       melanoma-affected dogs with different survival times.',
+                       abstract = 'Melanoma is the most common malignancy in dogs, 
+                       comprising 4% of all canine tumors. Oral melanoma (OM) in 
+                       dogs is considered an extremely malignant tumor and is 
+                       characterized by rapid invasion of surrounding normal tissues,
+                       metastasis to the regional lymph nodes, lungs and occasionally 
+                       to other distant organs. Little information is available 
+                       on the transcriptome landscape of OM-diagnosed dogs. Thus,
+                       the aim of the present study was to characterize the 
+                       transcriptome of a cohort of OM-diagnosed dogs (prior treatment)
+                       and to investigate whether dogs with different survival 
+                       times would have a distinct transcriptomic fingerprint. ', 
+                      url = 'https://www.ncbi.nlm.nih.gov/bioproject/475196',
+)
+
+metadata(PRJNA421863) <- list(datosexperimento)
+
+```
+
+De la matriz de conteo original vamos a generar una matriz de conteo anotada,
+que al fin y a cabo es lo mismo solo que tiene una columna adicional con el
+simbolo del gen correspondiente a su respectivo código ENSEMBL. Vemos como hay
+identificadores ENSEMBL que no tienen ningún GENE_SYMBOL.
+```{r anotar}
+
+library('biomaRt')
+mart <- useDataset("clfamiliaris_gene_ensembl", useMart("ensembl"))
+genes <- rownames(PRJNA421863)
+simbolos <- getBM(filters = "ensembl_gene_id",
+                  attributes = c("ensembl_gene_id","entrezgene_id","external_gene_name"),
+                  values = genes,
+                  mart = mart)
+
+colnames(simbolos) <- c("ENSEMBLID","ENTREZID", "GENE_SYMBOL")
+
+
+simbolos <- distinct(simbolos,ENSEMBLID,.keep_all = TRUE)
+simbolos$GENE_SYMBOL[simbolos$GENE_SYMBOL == ""] <- NA
+
+rowData(PRJNA421863) <- simbolos
+save(PRJNA421863,file = "PRJNA421863.rda")
+
+
+```
+
+
+Generamos reporte final
+```{r,eval=FALSE}
+library(ReportingTools)
+
+# Nombre del output:
+report_output = "canine_melanome.DE"
+
+# Generación del informe
+html_canine = HTMLReport(shortName = report_output, title = "melanome_report",
+                       reportDirectory = ".")
+
+#Publicar
+publish(matriz_conteo,html_canine)
+finish(html_canine)
+
+# Guardamos el data.frame
+save(report_output,file="./canine_melanome.rda")
+```
