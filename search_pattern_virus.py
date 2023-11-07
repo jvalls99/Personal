@@ -1,6 +1,6 @@
 ###############################################################################
-## Este programa recopila la clase fasta y sus métodos asociados como parte  ##
-## de la tarea final de la asignatura de Programación.                       ##
+## Este programa se encarga de encontrar motivos de secuencia en genomas     ##
+## virales a través de la construcción de la Clase Fasta                     ##
 ##                                                                           ##
 ## Versión: 2.0                                                              ##
 ##                                                                           ##
