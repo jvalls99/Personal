@@ -12,13 +12,3 @@ core.
         - Árbol filogenético con los SNPs del alineamiento.
   
             
-
-2. eliminacion_plasmidos.py: Recibe los headers de las secuencias FASTA pertenecientes a plásmidos y las elimina del fichero.
-
-3. ids_stxx.txt: Los identificadores de las muestras utilizadas.
-
-4. core_ancestral_stxx: Los resultados obtenidos tras la construcción del core y la inferencia de los estados ancestrales.
-
-5. resultados_principales_ensamblados: Análisis de calidad de los genomas utilizados para el estudio.
-
-6. dependencias.txt: Contiene los programas necesarios para poder ejecutar la pipeline (construir_core.sh) junto al código que he usado para su respectivas instalaciones.
