@@ -1,0 +1,23 @@
+---
+title: "Untitled"
+author: "Javier Valls"
+date: "5/9/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(Rsubread)
+
+fastq_files= list.files(path = "index_reference",pattern = "[0-9].bam$",full.names = TRUE)
+annot_file = list.files(path = ".",pattern = ".gtf")
+
+count_matrix <-featureCounts(files = fastq_files,
+              annot.ext = annot_file,
+              isGTFAnnotationFile = TRUE,
+              GTF.attrType = "gene_id",
+              isPairedEnd = TRUE)
+
+count_matrix <- count_matrix$counts
+
+write.csv(count_matrix,file = "count_matrix.csv",sep = ";")
+```
