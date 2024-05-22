@@ -5,7 +5,7 @@ params.reference = "/mnt/c/Users/javi_/Escritorio/entrenamiento/GCF_000005845.2_
 params.annotation = "/mnt/c/Users/javi_/Escritorio/entrenamiento/Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.57.gff3"
 params.script_R = ""
 
-// Captura los identificadores a partir de un fichero con los SRA IDs
+// SRA IDs
 process get_ids{
 
     input:
@@ -20,7 +20,7 @@ process get_ids{
 }
 
 
-// Descarga los ficheros SRA a partir de los identificadores
+// Download SRA files
 process descargaSRA {
 
     publishDir("sra_files", mode: 'copy')
@@ -39,7 +39,7 @@ process descargaSRA {
 }
 
 
-// Convierte los SRA en formato FASTQ
+// Convert SRA to FASTQ
 process convert_to_fastq {
 
     publishDir("fastq_files",mode:'copy')
@@ -55,7 +55,7 @@ process convert_to_fastq {
 }
 
 
-// Descarta las lecturas de baja calidad de los FASTQ con FASTP
+// Filters out low quality reads from FASTQ
 process filter_reads {
 
     publishDir("fastp_files", mode: 'copy')
@@ -73,8 +73,8 @@ process filter_reads {
 }
 
 
-// Mapea las lecturas limpias contra la referencia seleccionada, generando
-// los BAM que permitirán construir la matriz de conteo
+// Mapping reads to reference to generate BAM files
+
 process mapping_to_reference{
     publishDir("bam_files",mode:"copy")
 
@@ -97,7 +97,7 @@ process mapping_to_reference{
 
 }
 
-// Construcción de la matriz de conteo y análisis DEG
+// Get the Count Matrix and DEG analysis
 
 process perform_DEG_analysis{
     input:
@@ -116,7 +116,7 @@ process perform_DEG_analysis{
 
 
 }
-// Ejecución de los procesos
+// Main workflow
 workflow {
     // Input Channels
     ref_ch = Channel.fromPath(params.reference)
