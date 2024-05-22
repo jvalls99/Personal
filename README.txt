@@ -1,26 +1,21 @@
-Esta carpeta contiene los programas necesarios para la construcción de un core genome y un pangenoma.
+This folder contains the programs necessary for the construction of a core genome and a pangenome.
 
 TFM:
 
-1. construir_core.sh: Recibe una lista de identificadores de NCBI (GCF) como argumento. El usuario elige mediante parámetros si desea construir el core o pangenoma, si desea elaborar una base de datos plasmídica y en ese caso, puede introducir el fichero FASTA con las secuencias. Se automatizan los procesos de
-descarga, anotación, eliminación de plásmidos (únicamente para core) y obtención de los alineamientos con Panaroo. También se obtiene los SNPs y la filogenia
+1. build_core.sh: Receives a list of NCBI identifiers (GCF) as argument. The user chooses by parameters whether to build the core or pangenome, whether to build a plasmid database and in that case, can enter the FASTA file with the sequences. The processes of downloading, annotation
+downloading, annotation, plasmid removal (only for core) and obtaining alignments with Panaroo are automated. SNPs and phylogeny are also obtained.
 core.
 
-  Entrada:
-        - lista_accesiones: Un ID de NCBI por linea.
-  Salidas:
-        - Carpeta con los genomas descargados y sus ficheros de anotación e identificación de plásmidos-
-        - Carpeta con los alineamientos individuales de genes y su concatenación (core/pangenoma)
-        - Árbol filogenético con los SNPs del alineamiento.
+  Input:
+        - accessions_list: One NCBI ID per line.
+  Output:
+        - Folder with downloaded genomes and their plasmid annotation and identification files-.
+        - Folder with the individual gene alignments and their concatenation (core/pangenome).
+        - Phylogenetic tree with the SNPs of the alignment.
   
             
-EXPRESIÓN DIFERENCIAL:
+DIFFERENTIAL EXPRESSION:
 
-1. pipeline.nf: Está escrito con lenguaje Nextflow para facilitar la construcción de la pipeline. Permite obtener a partir de identificadores SRA y una referencia los ficheros BAM, a partir de los cuales se va a construir la matriz de conteo y finalmente estudiar la expresión Diferencial con edgeR y DeSeq2.
+1. pipeline.nf: It is written with Nextflow language to facilitate pipeline construction. It allows to obtain from SRA identifiers and a reference the BAM files, from which the count matrix will be built and finally study the differential expression with edgeR and DeSeq2.
 
-2. build_matrix.R: Construye la matriz y ejecuta los análisis de Expresión Diferencial.
-
-
-BÚSQUEDA DE PATRONES Y MANIPULACIÓN DE SEUCENCIAS VÍRICAS.
-
-1. search_pattern_virus.py
+2. build_matrix.R: Builds the matrix and executes the Differential Expression analysis.
