@@ -2,7 +2,7 @@ This folder contains the programs necessary for the construction of a core genom
 
 TFM:
 
-1. build_core.sh: Receives a list of NCBI identifiers (GCF) as argument. The user chooses by parameters whether to build the core or pangenome, whether to build a plasmid database and in that case, can enter the FASTA file with the sequences. The processes of downloading, annotation
+1. construction_core.sh: Receives a list of NCBI identifiers (GCF) as argument. The user chooses by parameters whether to build the core or pangenome, whether to build a plasmid database and in that case, can enter the FASTA file with the sequences. The processes of downloading, annotation
 downloading, annotation, plasmid removal (only for core) and obtaining alignments with Panaroo are automated. SNPs and phylogeny are also obtained.
 core.
 
