@@ -16,6 +16,6 @@ core.
             
 DIFFERENTIAL EXPRESSION:
 
-1. pipeline.nf: It is written with Nextflow language to facilitate pipeline construction. It allows to obtain from SRA identifiers and a reference the BAM files, from which the count matrix will be built and finally study the differential expression with edgeR and DeSeq2.
+1. pipeline.nf: It is written with Nextflow language to facilitate pipeline construction. It allows to obtain from SRA identifiers and a reference the BAM files, from which the count matrix will be built.
 
-2. build_matrix.R: Builds the matrix and executes the Differential Expression analysis.
+
